@@ -166,9 +166,6 @@ impl Lexer {
 
         self.next_char();
 
-        // FIX: Implement actually parsing
-        // Some floats from the automata of the lecture are not
-        // supported by parse::<f64>
         return match state {
             3 | 6 | 7 => unsafe {
                 let float_val: f64;
