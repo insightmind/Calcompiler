@@ -49,21 +49,21 @@ impl Parser {
         }
 
         let token = current.unwrap();
-        match token {
+        return match token {
             Token::T_LPAREN => {
                 self.next_token();
                 let expression = self.parse_e();
                 self.next_token();
 
-                return match self.current_token() {
+                match self.current_token() {
                     Some(T_RPAREN) => expression,
                     _ => Err(ParseError::FAILED),
                 }
             },
             Token::T_NUMBER(val) => {
-                return Ok(Box::new(Val { value: *val }));
+                Ok(Box::new(Val { value: *val }))
             },
-            _ => return Err(ParseError::FAILED),
+            _ => Err(ParseError::FAILED),
         }
     }
 
