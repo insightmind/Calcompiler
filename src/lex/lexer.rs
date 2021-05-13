@@ -53,7 +53,7 @@ impl Lexer {
                 self.next_char();
                 Ok(Token::T_RPAREN)
             },
-            c if { c.is_ascii_alphanumeric() || c == '.' } => self.lex_float(),
+            c if { c.is_ascii_digit() || c == '.' } => self.lex_float(),
             '\n' | ' ' | '\t' | 'r' => { // Parse any new line or whitespace related character.
                 self.next_char();
                 Ok(Token::EOF)
@@ -66,6 +66,8 @@ impl Lexer {
 
     pub fn lex_float(&mut self) -> Result<Token, LexError> {
         let mut float_string = String::from("");
+        let mut ex_string = String::from("");
+
         let mut current_char = self.current_char();
         // Simple state machine as on slide 35
         let mut state = 0;
@@ -76,7 +78,7 @@ impl Lexer {
             match state {
                 0 => {
                     match character {
-                        c if { c.is_ascii_alphanumeric() } => {
+                        c if { c.is_ascii_digit() } => {
                             float_string.push(c);
                             state = 2;
                         },
@@ -89,7 +91,7 @@ impl Lexer {
                 }
                 1 => {
                     match character {
-                        c if { c.is_ascii_alphanumeric() } => {
+                        c if { c.is_ascii_digit() } => {
                             float_string.push(c);
                             state = 3;
                         },
@@ -98,7 +100,7 @@ impl Lexer {
                 },
                 2 => {
                     match character {
-                        c if { c.is_ascii_alphanumeric() } => {
+                        c if { c.is_ascii_digit() } => {
                             float_string.push(c);
                         },
                         '.' => {
@@ -110,15 +112,13 @@ impl Lexer {
                 },
                 3 => {
                     match character {
-                        c if { c.is_ascii_alphanumeric() } => {
+                        c if { c.is_ascii_digit() } => {
                             float_string.push(c);
                         },
                         'e' | 'E' => {
-                            float_string.push(character);
                             state = 4;
                         },
                         'f' | 'F' | 'l' | 'L' => {
-                            float_string.push(character);
                             state = 7;
                         },
                         _ => break 'lex_loop,
@@ -126,12 +126,12 @@ impl Lexer {
                 },
                 4 => {
                     match character {
-                        c if { c.is_ascii_alphanumeric() } => {
-                            float_string.push(c);
+                        c if { c.is_ascii_digit() } => {
+                            ex_string.push(c);
                             state = 6;
                         },
                         '-' | '+' => {
-                            float_string.push(character);
+                            ex_string.push(character);
                             state = 5;
                         },
                         _ => break 'lex_loop,
@@ -139,8 +139,8 @@ impl Lexer {
                 },
                 5 => {
                     match character {
-                        c if { c.is_ascii_alphanumeric() } => {
-                            float_string.push(c);
+                        c if { c.is_ascii_digit() } => {
+                            ex_string.push(c);
                             state = 6;
                         },
                         _ => break 'lex_loop,
@@ -148,11 +148,10 @@ impl Lexer {
                 },
                 6 => {
                     match character {
-                        c if { c.is_ascii_alphanumeric() } => {
-                            float_string.push(c);
+                        c if { c.is_ascii_digit() } => {
+                            ex_string.push(c);
                         },
                         'f' | 'F' | 'l' | 'L' => {
-                            float_string.push(character);
                             state = 7;
                         },
                         _ => break 'lex_loop,
@@ -171,11 +170,27 @@ impl Lexer {
         // Some floats from the automata of the lecture are not
         // supported by parse::<f64>
         return match state {
-            3 | 6 | 7 => {
+            3 | 6 | 7 => unsafe {
+                let float_val: f64;
+
                 match float_string.parse::<f64>() {
-                    Ok(val) => return Ok(T_NUMBER(val)),
-                    Err(err) => Err(LexError::FLOAT_PARSE_FAIL(err)),
+                    Ok(val) => float_val = val,
+                    Err(err) => return Err(LexError::FLOAT_PARSE_FAIL(err)),
                 }
+
+                if ex_string.is_empty() {
+                    return Ok(T_NUMBER(float_val));
+                }
+
+                let ex_val: i32;
+
+                match ex_string.parse::<i32>() {
+                    Ok(val) => ex_val = val,
+                    Err(err) => return Err(LexError::FLOAT_EXPONENT_PARSE_FAIL(err)),
+                }
+
+                let result = float_val * f64::powi(10.0, ex_val);
+                return Ok(T_NUMBER(result))
             },
             _ => Err(LexError::UNKNOWN_FLOAT),
         }

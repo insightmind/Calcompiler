@@ -4,7 +4,7 @@ use lex::token::Token;
 
 fn main() {
     let mut lexer = Lexer {
-        source: ".05/2.0-4.0*(500.075+6.0)".to_string(),
+        source: ".05e10/2.0-4.0*(500.075+6.0)".to_string(),
         .. Default::default()
     };
 
