@@ -8,6 +8,7 @@ use crate::lex::token::Token;
 // T'= *FT', /FT', "";
 // F = (E), number
 //
+#[allow(dead_code)]
 pub struct Parser {
     pub token_stream: Vec<Token>
 }

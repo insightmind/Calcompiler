@@ -167,7 +167,7 @@ impl Lexer {
         self.next_char();
 
         return match state {
-            3 | 6 | 7 => unsafe {
+            3 | 6 | 7 => {
                 let float_val: f64;
 
                 match float_string.parse::<f64>() {
