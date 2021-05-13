@@ -20,7 +20,32 @@ impl Default for Lexer {
 
 // Lexer methods
 impl Lexer {
-    pub fn next_token(&mut self) -> Result<Token, LexError> {
+    pub fn lex_source(&mut self) -> Result<Vec<Token>, LexError> {
+        let mut token_stream: Vec<Token> = Vec::new();
+
+        loop {
+            let token_result = self.next_token();
+            match token_result {
+                Ok(token) => {
+                    print!("<{}>", token);
+
+                    if token == Token::EOF {
+                        break;
+                    } else {
+                        token_stream.push(token);
+                    }
+                },
+                Err(error) => {
+                    print!("{}", error);
+                    return Err(error);
+                },
+            }
+        }
+
+        return Ok(token_stream);
+    }
+
+    fn next_token(&mut self) -> Result<Token, LexError> {
         let char = self.current_char();
 
         if char.is_none() {
@@ -64,7 +89,7 @@ impl Lexer {
         return token_result
     }
 
-    pub fn lex_float(&mut self) -> Result<Token, LexError> {
+    fn lex_float(&mut self) -> Result<Token, LexError> {
         let mut float_string = String::from("");
         let mut ex_string = String::from("");
 

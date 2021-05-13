@@ -2,7 +2,6 @@ mod lex;
 mod parser;
 
 use lex::lexer::Lexer;
-use lex::token::Token;
 
 fn main() {
     let mut lexer = Lexer {
@@ -10,15 +9,5 @@ fn main() {
         .. Default::default()
     };
 
-    loop {
-        let token_result = lexer.next_token();
-        match token_result {
-            Ok(token) => {
-                print!("<{}>", token);
-
-                if token == Token::EOF { break; }
-            },
-            Err(error) => print!("{}", error),
-        }
-    }
+    let _token_stream = lexer.lex_source();
 }
