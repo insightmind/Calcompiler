@@ -1,4 +1,6 @@
 mod lex;
+mod parser;
+
 use lex::lexer::Lexer;
 use lex::token::Token;
 

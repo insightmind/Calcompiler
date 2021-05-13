@@ -1,6 +1,6 @@
-use super::lex_error::LexError;
-use super::token::Token;
-use super::token::Token::T_NUMBER;
+use crate::lex::lex_error::LexError;
+use crate::lex::token::Token;
+use crate::lex::token::Token::T_NUMBER;
 
 // Lexer definition
 pub struct Lexer {
