@@ -23,14 +23,14 @@ impl Lexer {
     pub fn lex_source(&mut self) -> Result<Vec<Token>, LexError> {
         let mut token_stream: Vec<Token> = Vec::new();
 
-        loop {
+        'lexloop: loop {
             let token_result = self.next_token();
             match token_result {
                 Ok(token) => {
                     print!("<{}>", token);
 
                     if token == Token::EOF {
-                        break;
+                        break 'lexloop;
                     } else {
                         token_stream.push(token);
                     }
@@ -188,8 +188,6 @@ impl Lexer {
             self.next_char();
             current_char = self.current_char();
         }
-
-        self.next_char();
 
         return match state {
             3 | 6 | 7 => {
